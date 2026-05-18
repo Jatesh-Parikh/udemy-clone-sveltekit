@@ -14,7 +14,7 @@ type FlyAndScaleParams = {
     duration?: number;
 };
 
-export const FlyAndScale = (
+export const flyAndScale = (
     node: Element,
     params: FlyAndScaleParams = { y: -8, x: 0, start: 0.95, duration: 150 }
 ): TransitionConfig => {
