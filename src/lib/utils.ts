@@ -17,3 +17,45 @@ export function formatCurrency(num: number) {
         currency: "INR"
     }).format(num);
 };
+
+export function draggable(node: HTMLLIElement, options?: string) {
+    let state = options;
+    node.style.cursor = 'grab';
+    node.draggable = true;
+
+    function handleDragStart(e) {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', state);
+    }
+
+    node.addEventListener('dragstart', handleDragStart);
+
+    return {
+        update(data) {
+            state = data;
+        },
+        destroy() {
+            node.removeEventListener("dragstart", handleDragStart);
+        }
+    }
+};
+
+export function dropZone(node: HTMLDivElement, options?: string) {
+    let state = options;
+    node.style.cursor = "grab";
+    node.draggable = true;
+
+    function handleDragStart(e) {
+        e.dataTransfer.setData("text/plain", state);
+    }
+    node.addEventListener("dragstart", handleDragStart);
+
+    return {
+        update(data) {
+            state = data;
+        },
+        destroy() {
+            node.removeEventListener("dragstart", handleDragStart);
+        }
+    };
+};
