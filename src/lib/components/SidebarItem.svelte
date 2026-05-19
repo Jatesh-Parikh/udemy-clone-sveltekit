@@ -1,6 +1,5 @@
 <script lang="ts">
     import { page } from "$app/stores";
-	import { npm_package_json } from "$env/static/private";
     import { cn } from "$lib/utils";
     import type { Icon } from "lucide-svelte";
     import type { ComponentType } from "svelte";
