@@ -1,12 +1,10 @@
 <script lang="ts">
-	import { z } from 'zod';
 	import { toast } from 'svelte-sonner';
 	import * as Form from '$lib/components/ui/form';
-	import { Loader2, Pencil, PlusCircle } from 'lucide-svelte';
+	import { Loader2, PlusCircle } from 'lucide-svelte';
 	import Button from './ui/button/button.svelte';
 	import { superForm, type Infer, type SuperValidated } from 'sveltekit-superforms';
 	import { page } from '$app/stores';
-	import { cn } from '$lib/utils';
 	import { chapterTitleSchema } from '$lib/schema';
 	import type { Chapter } from '$lib/types';
 	import ChaptersList from './ChaptersList.svelte';
