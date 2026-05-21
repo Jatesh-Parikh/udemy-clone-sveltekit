@@ -238,4 +238,24 @@ export const actions = {
 			return message(form, errorMessage, { status: 400 });
 		}
 	},
+	updatePublish: async (event) => {
+		const { locals: { pb }, params } = event;
+		const { courseId } = params;
+
+		try {
+			const course = await pb.collection('courses').getOne<Course>(courseId);
+			if (course.isPublished) {
+				await pb.collection('courses').update(courseId, { isPublished: false });
+
+				return { message: 'Successfully unpublished course' };
+			} else {
+				await pb.collection('courses').update(courseId, { isPublished: true });
+				return { message: 'Successfully published course', confetti: true };
+			}
+		} catch (e) {
+			const { message: errorMessage } = e as ClientResponseError;
+
+			return fail(400, { message: errorMessage });
+		}
+	},
 };
