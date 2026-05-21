@@ -202,4 +202,40 @@ export const actions = {
 			return fail(400, { message: errorMessage });
 		}
 	},
+	createChapter: async (event) => {
+		const { locals: { pb }, params } = event;
+		const { courseId } = params;
+
+		const form = await superValidate(event, zod(chapterTitleSchema));
+		if (!form.valid) {
+			return fail(400, { form });
+		}
+
+		let lastChapter: Chapter | null = null;
+
+		try {
+			lastChapter = await pb
+				.collection('chapters')
+				.getFirstListItem<Chapter>(`course="${courseId}"`, {
+					sort: '-position'
+				});
+		} catch {
+			lastChapter = null;
+		}
+
+		try {
+			const newPosition = lastChapter ? lastChapter.position + 1 : 1;
+			await pb.collection('chapters').create({
+				title: form.data.title,
+				course: courseId,
+				position: newPosition
+			});
+			return message(form, 'Successfully added course chapter');
+		} catch (e) {
+			console.log('createChapter error', e);
+			const { message: errorMessage } = e as ClientResponseError;
+
+			return message(form, errorMessage, { status: 400 });
+		}
+	},
 };
