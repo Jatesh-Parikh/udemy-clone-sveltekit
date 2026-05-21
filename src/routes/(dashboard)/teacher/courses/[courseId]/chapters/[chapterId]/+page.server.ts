@@ -171,4 +171,33 @@ export const actions = {
 		}
 		redirect(308, `/teacher/courses/${courseId}`);
 	},
+    updatePublish: async (event) => {
+		const { locals: { pb }, params } = event;
+		const { chapterId, courseId } = params;
+		
+        try {
+			const chapter = await pb.collection('chapters').getOne<Chapter>(chapterId);
+			
+            if (chapter.isPublished) {
+				await pb.collection('chapters').update(chapterId, { isPublished: false });
+				
+                const isPublishedChapterInCourse = await pb.collection('chapters').getFullList({
+					filter: `course = "${courseId}" && isPublished = "${true}" `
+				});
+
+				if (!isPublishedChapterInCourse.length) {
+					await pb.collection('courses').update<Course>(courseId, { isPublished: false });
+				}
+
+				return { message: 'Successfully unpublished chapter' };
+			} else {
+				await pb.collection('chapters').update(chapterId, { isPublished: true });
+				return { message: 'Successfully published chapter' };
+			}
+		} catch (e) {
+			const { message: errorMessage } = e as ClientResponseError;
+
+			return fail(400, { message: errorMessage });
+		}
+	}
 };
