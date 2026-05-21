@@ -128,4 +128,22 @@ export const actions = {
 			return fail(400, { message: 'Invalid file format' });
 		}
 	},
+	updateCategory: async (event) => {
+		const { locals: { pb }, params } = event;
+		const { courseId } = params;
+
+		const form = await superValidate(event, zod(categorySchema));
+		if (!form.valid) {
+			return fail(400, { form });
+		}
+
+		try {
+			await pb.collection('courses').update(courseId, form.data);
+			return message(form, 'Successfully updated course category');
+		} catch (e) {
+			const { message: errorMessage } = e as ClientResponseError;
+
+			return message(form, errorMessage, { status: 400 });
+		}
+	},
 };
