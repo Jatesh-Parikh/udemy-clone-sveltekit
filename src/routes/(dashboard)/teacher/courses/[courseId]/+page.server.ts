@@ -258,4 +258,26 @@ export const actions = {
 			return fail(400, { message: errorMessage });
 		}
 	},
+	deleteCourse: async (event) => {
+		const { locals: { pb }, params } = event;
+		const { courseId } = params;
+		try {
+			const course = await pb.collection('courses').getOne<Course>(courseId, {
+				expand: 'chapters(course).muxData(chapterId)'
+			});
+
+			for (const chapter of course.expand?.['chapters(course)'] ?? []) {
+				if (chapter.expand?.['muxData(chapterId)']) {
+					await mux.video.assets.delete(chapter.expand['muxData(chapterId)'][0].assetId);
+				}
+			}
+			await pb.collection('courses').delete(courseId);
+		} catch (e) {
+			const { message: errorMessage, status } = e as ClientResponseError;
+			if (status === 404) error(404, 'Course does not exist');
+
+			return fail(400, { message: errorMessage });
+		}
+		redirect(308, '/teacher/courses');
+	}
 };
