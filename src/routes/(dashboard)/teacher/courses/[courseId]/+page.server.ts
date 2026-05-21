@@ -185,4 +185,21 @@ export const actions = {
 			return fail(400, { message: errorMessage });
 		}
 	},
+	deleteAttachment: async (event) => {
+		const { locals: { pb }, request } = event;
+
+		const formData = await request.formData();
+
+		const id = formData.get('id') as string;
+
+		try {
+			await pb.collection('attachments').delete(id);
+
+			return { message: 'Successfully deleted course attachment' };
+		} catch (e) {
+			const { message: errorMessage } = e as ClientResponseError;
+
+			return fail(400, { message: errorMessage });
+		}
+	},
 };
