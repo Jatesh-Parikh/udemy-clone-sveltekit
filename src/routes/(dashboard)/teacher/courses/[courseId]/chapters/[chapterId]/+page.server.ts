@@ -41,5 +41,22 @@ export const load = async ({ params, locals: { pb } }) => {
 };
 
 export const actions = {
-    
+    updateTitle: async (event) => {
+		const { locals: { pb }, params } = event;
+		const { chapterId } = params;
+
+		const form = await superValidate(event, zod(chapterTitleSchema));
+		if (!form.valid) {
+			return fail(400, { form });
+		}
+
+		try {
+			await pb.collection('chapters').update(chapterId, form.data);
+			return message(form, 'successfully updated chapter title');
+		} catch (e) {
+			const { message: errorMessage } = e as ClientResponseError;
+
+			return message(form, errorMessage, { status: 400 });
+		}
+	},
 };
