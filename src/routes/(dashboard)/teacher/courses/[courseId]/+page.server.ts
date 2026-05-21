@@ -107,4 +107,25 @@ export const actions = {
 			return message(form, errorMessage, { status: 400 });
 		}
 	},
+	updateImage: async (event) => {
+		const { locals: { pb }, params, request } = event;
+		const { courseId } = params;
+
+		const formData = await request.formData();
+
+		const image = formData.get('image');
+
+		if (image instanceof File) {
+			try {
+				await pb.collection('courses').update(courseId, { imageUrl: image });
+				return { message: 'Successfully updated course image' };
+			} catch (e) {
+				const { message: errorMessage } = e as ClientResponseError;
+
+				return fail(400, { message: errorMessage });
+			}
+		} else {
+			return fail(400, { message: 'Invalid file format' });
+		}
+	},
 };
