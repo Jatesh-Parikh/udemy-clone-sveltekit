@@ -137,4 +137,38 @@ export const actions = {
 			return fail(400, { message: errorMessage });
 		}
 	},
+    deleteChapter: async (event) => {
+		const { locals: { pb }, params } = event;
+		const { chapterId, courseId } = params;
+		
+        let existingMuxData: MuxData | null;
+		
+        try {
+			existingMuxData = await pb
+				.collection('muxData')
+				.getFirstListItem<MuxData>(`chapterId = "${chapterId}"`);
+		} catch {
+			existingMuxData = null;
+		}
+		
+        try {
+			if (existingMuxData) {
+				await mux.video.assets.delete(existingMuxData.assetId);
+				await pb.collection('muxData').delete(existingMuxData.id);
+			}
+			await pb.collection('chapters').delete(chapterId);
+			const isPublishedChapterInCourse = await pb.collection('chapters').getFullList({
+				filter: `course = "${courseId}" && isPublished = "${true}" `
+			});
+
+			if (!isPublishedChapterInCourse.length) {
+				await pb.collection('courses').update<Course>(courseId, { isPublished: false });
+			}
+		} catch (e) {
+			const { message: errorMessage } = e as ClientResponseError;
+
+			return fail(400, { message: errorMessage });
+		}
+		redirect(308, `/teacher/courses/${courseId}`);
+	},
 };
