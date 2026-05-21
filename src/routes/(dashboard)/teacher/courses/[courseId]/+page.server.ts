@@ -146,4 +146,22 @@ export const actions = {
 			return message(form, errorMessage, { status: 400 });
 		}
 	},
+	updatePrice: async (event) => {
+		const { locals: { pb }, params } = event;
+		const { courseId } = params;
+
+		const form = await superValidate(event, zod(priceSchema));
+		if (!form.valid) {
+			return fail(400, { form });
+		}
+
+		try {
+			await pb.collection('courses').update(courseId, form.data);
+			return message(form, 'Successfully updated course price');
+		} catch (e) {
+			const { message: errorMessage } = e as ClientResponseError;
+
+			return message(form, errorMessage, { status: 400 });
+		}
+	},
 };
