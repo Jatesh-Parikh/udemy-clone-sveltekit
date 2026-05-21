@@ -164,4 +164,25 @@ export const actions = {
 			return message(form, errorMessage, { status: 400 });
 		}
 	},
+	createAttachment: async (event) => {
+		const { locals: { pb }, params, request } = event;
+		const { courseId } = params;
+
+		const formData = await request.formData();
+
+		const file = formData.get('file');
+
+		try {
+			await pb.collection('attachments').create({
+				name: 'whatever',
+				course: courseId,
+				url: file
+			});
+			return { message: 'Successfully added course attachment' };
+		} catch (e) {
+			const { message: errorMessage } = e as ClientResponseError;
+
+			return fail(400, { message: errorMessage });
+		}
+	},
 };
