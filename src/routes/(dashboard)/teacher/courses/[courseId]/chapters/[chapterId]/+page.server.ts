@@ -93,4 +93,48 @@ export const actions = {
 			return message(form, errorMessage, { status: 400 });
 		}
 	},
+    updateVideo: async (event) => {
+		const { locals: { pb }, params, request } = event;
+		const { chapterId } = params;
+		const formData = await request.formData();
+
+		const video = formData.get('video');
+		
+        let existingMuxData: MuxData | null;
+		
+        try {
+			existingMuxData = await pb
+				.collection('muxData')
+				.getFirstListItem<MuxData>(`chapterId = "${chapterId}"`);
+		} catch {
+			existingMuxData = null;
+		}
+
+		try {
+			const chapter = await pb
+				.collection('chapters')
+				.update<Chapter>(chapterId, { videoUrl: video });
+			const videoUrl = pb.files.getUrl(chapter, chapter.videoUrl);
+
+			if (existingMuxData) {
+				await mux.video.assets.delete(existingMuxData.assetId);
+				await pb.collection('muxData').delete(existingMuxData.id);
+			}
+			const asset = await mux.video.assets.create({
+				input: [{ url: videoUrl }],
+				playback_policy: ['public'],
+				test: false
+			});
+			await pb.collection('muxData').create({
+				chapterId,
+				assetId: asset.id,
+				playbackId: asset.playback_ids?.[0]?.id
+			});
+			return { message: 'Successfully updated chapter video' };
+		} catch (e) {
+			const { message: errorMessage } = e as ClientResponseError;
+
+			return fail(400, { message: errorMessage });
+		}
+	},
 };
